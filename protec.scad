@@ -215,7 +215,7 @@ module prism(l, w, h) {
     );
 }
 
-module handle(label="") {
+module handle(label="",centred=centred) {
     ramp_length=4;
     diagonal_mirror()
         translate([key_length-ramp_length,0,key_height/2])
@@ -225,7 +225,7 @@ module handle(label="") {
     height=key_height+5;
     length=12;
     keyring_rad = 2.3;
-    translate([key_length,-key_width/2,-key_height/2]) {
+    translate([key_length,-key_width/2,-(centred ? height : key_height)/2]) {
         difference() {
             cube([length,key_width,height]);
             translate([length-keyring_rad*1.5, -extra, height/2])
@@ -239,7 +239,7 @@ module handle(label="") {
     }
 }
 
-module key(bitting=[],tip_cuts=[],tip_cut_all=false,dss_dimples=[9,11],dc_dimple=true,label="") {
+module key(bitting=[],tip_cuts=[],tip_cut_all=false,dss_dimples=[9,11],dc_dimple=true,label="",centred=false) {
     if (len(bitting) != 9 && len(bitting) != 11) {
         echo("Warning non-standard bitting length", len=len(bitting));
     }
@@ -264,8 +264,8 @@ module key(bitting=[],tip_cuts=[],tip_cut_all=false,dss_dimples=[9,11],dc_dimple
         }
     }
     
-    handle(label=label);
+    handle(label=label,centred=centred);
 }
 
 // Abloypart3.pdf Figure 11 key drawing
-key([0,6,1,4,2,3,1,0,5,2,3],tip_cuts=[0],tip_cut_all=true,dss_dimples=[11],label="Fig. 11");
+key([0,6,1,4,2,3,1,0,5,2,3],tip_cuts=[0],tip_cut_all=true,dss_dimples=[11],label="Fig. 11",centred=false);
