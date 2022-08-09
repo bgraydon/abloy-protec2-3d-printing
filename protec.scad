@@ -7,6 +7,10 @@ first_cut_center=tip_length-0.5; // cuts overlap by 0.5mm so the first cut cente
 cut_offset=1.5;
 cut_width=2;
 
+static_ball_out = 0.8; //mm
+static_cut_angle = 0.5; //degrees
+captive_cavity_radius = 1.5; //mm
+
 // depth of side dimple holes for Disc Controller / Disc Steering System
 dimple_depth=1.5; // not too dimensionally critical
 dimple_inner_radius=0.5; // radius of circle at bottom of dimple
@@ -42,7 +46,7 @@ intermediate_cut_radius=(2*minimum_cut_radius+key_height)/4;
 // ...
 // position 10 is last bitting cut for 11 cut keys
 
-module key_shaft() {
+module key_shaft(moving="none") {
     difference() {
         // Key tip centered at 0,0,0, extending in +x
         // Critical x dimensions are relative to key tip
@@ -68,7 +72,7 @@ module key_shaft() {
 
         // Side slots
         // Uncut slot depth is 0.3, but the warding can go down another 0.55
-        side_slot_depth=0.3+0.55;
+        side_slot_depth=0.3+(moving=="none" ? 0.55 : 0.04);
         side_slot_height=2.8;
         // +y
         translate([(key_length-extra)/2,(extra+key_width-side_slot_depth)/2,0])
@@ -239,33 +243,74 @@ module handle(label="",centred=centred) {
     }
 }
 
-module key(bitting=[],tip_cuts=[],tip_cut_all=false,dss_dimples=[9,11],dc_dimple=true,label="",centred=false) {
-    if (len(bitting) != 9 && len(bitting) != 11) {
-        echo("Warning non-standard bitting length", len=len(bitting));
+module moving_add(moving="none") {
+    if(moving == "static_ball") {
+        translate([21,static_ball_out,0]) sphere(r = 1.13, $fn=20);
     }
-    difference() {
-        key_shaft();
-        for(i=[0:len(bitting)-1]) {
-            bit(i, bitting[i]);
-        }
-        for(i=[0:len(dss_dimples)-1]) {
-            dss_dimple(dss_dimples[i]);
-        }
-        if (dc_dimple) {
-            dc_dimple();
-        }
-        
-        if (len(tip_cuts) > 0) {
-            tip_warding(tip_cuts);
-        }
-        
-        if (tip_cut_all) {
-            tip_master_cut();
+    if(moving == "compliant" || moving == "compliant-rear") {
+        springOffset = (moving == "compliant-rear") ? 5 : 0;
+        intersection() {
+            union() {
+                translate([21,0,0]) sphere(r = 1.13, $fn=20);
+                translate([21-5+springOffset,-0.4,-1]) cube([5,0.8,2]);
+            };
+            union() {
+                translate([21,1.5,0]) rotate([90,0,0]) cylinder(r=1,h=3,$fn=50);
+                translate([21-5+springOffset,-1.5,-1]) cube([5,3,2]);
+            };
         }
     }
-    
-    handle(label=label,centred=centred);
+    if(moving == "captive") {
+        translate([21,0,0]) sphere(r = 1.13, $fn=20);
+    }
+}
+
+module moving_subtract(moving="none") {
+    if(moving == "compliant" || moving == "compliant-rear") {
+        springOffset = (moving == "compliant-rear") ? 5 : 0;
+        translate([21,1.5,0]) rotate([90,0,0]) cylinder(r=1.3,h=3,$fn=50);
+        translate([21-5+springOffset,-1.5,-1.3]) cube([5,3,2.6]);
+    }
+    if(moving == "captive") {
+        translate([21,0,0]) sphere(r = captive_cavity_radius, $fn=20);
+    }
+}
+
+module key(bitting=[],tip_cuts=[],tip_cut_all=false,dss_dimples=[9,11],dc_dimple=true,label="",moving="none",centred=false) {
+    if(moving != "static") {
+        if (len(bitting) != 9 && len(bitting) != 11) {
+            echo("Warning non-standard bitting length", len=len(bitting));
+        }
+        difference() {
+            key_shaft(moving=moving);
+            for(i=[0:len(bitting)-1]) {
+                bit(i, bitting[i]);
+            }
+            for(i=[0:len(dss_dimples)-1]) {
+                dss_dimple(dss_dimples[i]);
+            }
+            if (dc_dimple) {
+                dc_dimple();
+            }
+            
+            if (len(tip_cuts) > 0) {
+                tip_warding(tip_cuts);
+            }
+            
+            if (tip_cut_all) {
+                tip_master_cut();
+            }
+            moving_subtract(moving=moving);
+        }
+        moving_add(moving=moving);
+        handle(label=label,centred=centred);
+    } else {
+        intersection() {
+            key(bitting=bitting,tip_cuts=tip_cuts,tip_cut_all=tip_cut_all,dss_dimples=dss_dimples,dc_dimple=dc_dimple,label=label,moving="static_ball",centred=centred);
+            rotate([0,0,2]) key(bitting=bitting,tip_cuts=tip_cuts,tip_cut_all=tip_cut_all,dss_dimples=dss_dimples,dc_dimple=dc_dimple,label=label,moving="static_none",centred=centred);
+        }
+    }
 }
 
 // Abloypart3.pdf Figure 11 key drawing
-key([0,6,1,4,2,3,1,0,5,2,3],tip_cuts=[0],tip_cut_all=true,dss_dimples=[11],label="Fig. 11",centred=false);
+key([0,6,1,4,2,3,1,0,5,2,3],tip_cuts=[0],tip_cut_all=false,dss_dimples=[],dc_dimple=false,label="Fig11",moving="captive",centred=true);
