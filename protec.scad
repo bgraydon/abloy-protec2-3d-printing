@@ -80,6 +80,14 @@ module key_shaft(moving="none") {
         // -y
         translate([(key_length-extra)/2,-(extra+key_width-side_slot_depth)/2,0])
             cube(size=[key_length+extra*2,side_slot_depth+extra,side_slot_height],center=true);
+        if(moving != "none") {
+            side_slot_depth=0.3+0.55;
+            translate([(2.5)/2,(extra+key_width-side_slot_depth)/2,0])
+                cube(size=[key_length+extra*2,side_slot_depth+extra,side_slot_height],center=true);
+            // -y
+            translate([(2.5)/2,-(extra+key_width-side_slot_depth)/2,0])
+                cube(size=[key_length+extra*2,side_slot_depth+extra,side_slot_height],center=true);
+        }
     }
 }
 
@@ -247,23 +255,23 @@ module moving_add(moving="none", cav, out, deg) {
     static_ball_out = out;
     
     if(moving == "static_ball") {
-        translate([21,static_ball_out,0]) sphere(r = 1.13, $fn=40);
+        translate([20.7,static_ball_out,0]) sphere(r = 1.13, $fn=40);
     }
     if(moving == "compliant" || moving == "compliant-rear") {
         springOffset = (moving == "compliant-rear") ? 5 : 0;
         intersection() {
             union() {
-                translate([21,0,0]) sphere(r = 1.13, $fn=40);
-                translate([21-5+springOffset,-0.4,-1]) cube([5,0.8,2]);
+                translate([20.7,0,0]) sphere(r = 1.13, $fn=40);
+                translate([20.7-5+springOffset,-0.4,-1]) cube([5,0.8,2]);
             };
             union() {
-                translate([21,1.5,0]) rotate([90,0,0]) cylinder(r=1,h=3,$fn=50);
-                translate([21-5+springOffset,-1.5,-1]) cube([5,3,2]);
+                translate([20.7,1.5,0]) rotate([90,0,0]) cylinder(r=0.8,h=3,$fn=50);
+                translate([20.7-5+springOffset,-1.5,-0.8]) cube([5,3,1.6]);
             };
         }
     }
     if(moving == "captive") {
-        translate([21,0,0]) sphere(r = 1.13, $fn=40);
+        translate([20.7,0,0]) sphere(r = 1.13, $fn=40);
     }
 }
 
@@ -272,11 +280,11 @@ module moving_subtract(moving="none", cav, out, deg) {
     
     if(moving == "compliant" || moving == "compliant-rear") {
         springOffset = (moving == "compliant-rear") ? 5 : 0;
-        translate([21,1.5,0]) rotate([90,0,0]) cylinder(r=1.3,h=3,$fn=50);
-        translate([21-5+springOffset,-1.5,-1.3]) cube([5,3,2.6]);
+        translate([20.7,1.5,0]) rotate([90,0,0]) cylinder(r=1.4,h=3,$fn=50);
+        translate([20.7-5+springOffset,-1.4,-1.3]) cube([5,3,2.8]);
     }
     if(moving == "captive") {
-        translate([21,0,0]) sphere(r = captive_cavity_radius, $fn=40);
+        translate([20.7,0,0]) sphere(r = captive_cavity_radius, $fn=40);
     }
 }
 
@@ -319,12 +327,12 @@ module key(bitting=[],tip_cuts=[],tip_cut_all=false,dss_dimples=[9,11],dc_dimple
 // Abloypart3.pdf Figure 11 key drawing
 
 module test(label, moving, cav=1.5, out=0.7, deg=0.5) {
-    key([0,6,1,3,2,4,2,0,1,4,5],tip_cuts=[0],tip_cut_all=false,dss_dimples=[],dc_dimple=false,label=label,moving=moving,centred=true, cav=cav, out=out, deg=deg);
+    key([0,6,1,3,2,4,2,0,1,4,5],tip_cuts=[0],tip_cut_all=true,dss_dimples=[],dc_dimple=false,label=label,moving=moving,centred=true, cav=cav, out=out, deg=deg);
 }
 
-translate([0, 0,0]) test("Protec1","none");
+/*translate([0, 0,0]) test("Protec1","none");
 translate([0, 7,0]) test("comp","compliant");
-/*translate([0,14,0]) test("comp-r","compliant-rear");
+translate([0,14,0]) test("comp-r","compliant-rear");
 translate([0,21,0]) test("cpt 1.3","captive",1.3,0.7,0.5);
 translate([0,28,0]) test("cpt 1.4","captive",1.4,0.7,0.5);
 translate([0,35,0]) test("cpt 1.5","captive",1.5,0.7,0.5);
@@ -332,3 +340,24 @@ translate([0,42,0]) test("cpt 1.6","captive",1.6,0.7,0.5);
 translate([0,49,0]) test("cpt 1.7","captive",1.7,0.7,0.5);
 translate([0,56,0]) test("comp","compliant");
 translate([0,63,0]) test("comp-r","compliant-rear");//*/
+
+/*translate([0, 0,0]) test(".5°0.2","static",1.3,0.2,0.5);
+translate([0, 7,0]) test("1.°0.35","static",1.3,0.35,1);
+translate([0,14,0]) test("1.5°0.5","static",1.3,0.5,1.5);
+translate([0,21,0]) test("2°0.7","static",1.3,0.7,2.0);
+translate([0,28,0]) test("Protec1","none");*/
+
+
+
+translate([0, 0,0]) test("1.7°0.7","static",1.3,0.7,1.7);
+translate([0, 7,0]) test("2°0.6","static",1.3,0.6,2.0);
+translate([0,14,0]) test("comp","compliant");
+translate([0,21,0]) test("comp-r","compliant-rear");
+translate([0,28,0]) test("cpt 1.8","captive",1.8,0.7,0.5);
+translate([0,35,0]) test("cpt 1.9","captive",1.9,0.7,0.5);
+translate([0,42,0]) test("cpt 2.0","captive",2.0,0.7,0.5);
+translate([0,49,0]) test("cpt 2.1","captive",2.1,0.7,0.5);
+translate([0,56,0]) test("2°0.7","static",1.3,0.7,2);
+translate([0,63,0]) test("1.5°0.5","static",1.3,0.5,1.5);
+translate([0,70,0]) test("comp","compliant");
+translate([0,77,0]) test("comp-r","compliant-rear");
